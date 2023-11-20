@@ -6,7 +6,7 @@ function onRequestsObserved( batch ) {
     loadedResourceList.push( ...batch.getEntries() );
     const hasClerkIoResource = { status: hasClerkIo(loadedResourceList)}
     updateState("icon", hasClerkIoResource, 'CleSS');
-    const hasThirdPartiesResource = hasThirdParties(loadedResourceList);
+    const hasThirdPartiesResource = compList(loadedResourceList);
     updateState("popup", hasThirdPartiesResource, 'CleSS');
 }
 
@@ -32,7 +32,7 @@ function hasClerkIo(resourceList){
   return false;
 }
 
-function hasThirdParties(resourceList){
+function compList(resourceList){
   let compsFound = [];
   const compDomains = {
     "Nosto": ["connest.nosto.com", "connest.nosto.net", "cdn.nosto.com"],
