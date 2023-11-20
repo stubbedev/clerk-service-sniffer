@@ -13,9 +13,6 @@ window.addEventListener("message", (event) => {
     || ! chrome.runtime?.id) {
     return;
   }
- 
-  chrome.runtime.sendMessage(event.data, (rsp) => {
-    console.log(rsp)
-  })
+  chrome.runtime.sendMessage({type: event.data.type, source: event.data.source, message: event.data.message })
 
 }, false);

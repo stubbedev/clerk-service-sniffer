@@ -1,14 +1,9 @@
-if(typeof loadedResourceList === "undefined") {
-  // This is done in order to still have state from tabs if
-  // they load and get swapped away from and back
-  let loadedResourceList = []
-}
+const loadedResourceList = [];
 
 attachObserver();
 
 function onRequestsObserved( batch ) {
     loadedResourceList.push( ...batch.getEntries() );
-
     const hasClerkIoResource = { status: hasClerkIo(loadedResourceList)}
     updateState("icon", hasClerkIoResource, 'CleSS');
     const hasThirdPartiesResource = hasThirdParties(loadedResourceList);
