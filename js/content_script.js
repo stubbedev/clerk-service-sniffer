@@ -6,14 +6,16 @@ s.onload = async function () {
 (document.head || document.documentElement).prepend(s);
 
 window.addEventListener("message", (event) => {
-  if (event.source != window) {
+  if (event.source != window 
+    || ! event.data 
+    || ! event.data.type 
+    || event.data.source != 'CleSS' 
+    || ! chrome.runtime?.id) {
     return;
   }
+ 
+  chrome.runtime.sendMessage(event.data, (rsp) => {
+    console.log(rsp)
+  })
 
-  if (event.data.type && (event.data.type == "FROM_PAGE")) {
-    if (chrome.runtime?.id) {
-      chrome.runtime.sendMessage({clerk: event.data.text}, function(response){
-      });
-    }
-  }
 }, false);

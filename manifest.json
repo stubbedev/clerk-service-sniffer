@@ -9,7 +9,10 @@
       "service_worker": "js/worker.js"
     },
     "permissions": ["activeTab", "background"],
-    "action": {},
+    "action": {
+      "default_popup": "pages/popup.html",
+      "default_title": "See More"
+    },
     "content_scripts": [
     {
         "matches": ["http://*/*", "https://*/*"],
