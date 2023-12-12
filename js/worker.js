@@ -1,3 +1,8 @@
+//Background listens for pages/browser events 
+//Listen for when user clicks button, and make something happen e.g
+// Press button, makes the content script run
+//Browser Action Orietned  
+
 async function handleIcon(request, sender){
   const color = request.message.status ? '#50fa7b' : '#ff5555';
   const text = request.message.status ? 'YES' : 'NO';
@@ -18,11 +23,16 @@ async function handleIcon(request, sender){
   return true;
 }
 
-async function handlePopup(request, sender){
+async function handlePopup(request, sender) {
+    chrome.storage.local.set({
+      request: request,
+      sender: sender
+    })
   return true;
 }
 
 
+ 
 chrome.runtime.onMessage.addListener(
     async function(request, sender, sendResponse) {
       if(request.source == 'CleSS'){

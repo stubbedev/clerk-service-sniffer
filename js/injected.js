@@ -1,3 +1,5 @@
+
+
 const loadedResourceList = [];
 
 attachObserver();
@@ -6,7 +8,7 @@ function onRequestsObserved( batch ) {
     loadedResourceList.push( ...batch.getEntries() );
     const hasClerkIoResource = { status: hasClerkIo(loadedResourceList)}
     updateState("icon", hasClerkIoResource, 'CleSS');
-    const hasThirdPartiesResource = compList(loadedResourceList);
+    const hasThirdPartiesResource = { competitor: compList(loadedResourceList) };
     updateState("popup", hasThirdPartiesResource, 'CleSS');
 }
 
@@ -33,17 +35,20 @@ function hasClerkIo(resourceList){
 }
 
 function compList(resourceList){
-  let compsFound = [];
+  let compsFound = {};
   const compDomains = {
-    "Nosto": ["connest.nosto.com", "connest.nosto.net", "cdn.nosto.com"],
-    "Algolia": ["cdn.algolia.net", "algolia.net", "algolia.com", "algolia.com", "cdn.algolia.net"],
-    "HelloRetail": ["cdn.helloretail.com", "cdn.helloretail.net", "cdn.helloretail.com", "cdn.helloretail.net", "cdn.helloretail.io"],
+    "Nosto": ['connect.nosto.com'],
+    "Klevu": ['js.klevu.com','eucs.klevu.com'],
+    "Doofinder": ['cdn.doofinder.com']
   }
   for( const resource of resourceList ){
     for( const [comp, domains] of Object.entries(compDomains) ){
       for( const domain of domains ){
         if(resource?.name.includes(domain)){
-          compsFound.push(domain);
+          if(compsFound[comp] === undefined){
+            compsFound[comp] = []
+          }
+          compsFound[comp].push(domain);
         }
       }
     }
