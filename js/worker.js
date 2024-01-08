@@ -18,19 +18,10 @@ async function handleIcon(request, sender){
   return true;
 }
 
-async function handlePopup(request, sender){
-  return true;
-}
-
-
 chrome.runtime.onMessage.addListener(
     async function(request, sender, sendResponse) {
-      if(request.source == 'CleSS'){
-        if(request.type == 'icon'){
+      if(request.source == 'CleSS' && request.type == 'icon'){
           await handleIcon(request, sender);
-        } else if(request.type == 'popup') {
-          await handlePopup(request, sender);
-        }
       }
     }
 );

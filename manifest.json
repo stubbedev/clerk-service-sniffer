@@ -8,7 +8,7 @@
     "background": {
       "service_worker": "js/worker.js"
     },
-    "permissions": ["activeTab", "background"],
+    "permissions": ["activeTab", "background", "storage"],
     "action": {
       "default_popup": "pages/popup.html",
       "default_title": "See More"
