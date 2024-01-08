@@ -27,7 +27,7 @@
     "web_accessible_resources": [
         {
             "resources": ["js/injected.js"],
-            "matches": ["http://*/*","https://*/*"]
+            "matches": ["http://*/*","https://*/*"] 
             
             
         }

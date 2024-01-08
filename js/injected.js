@@ -1,5 +1,6 @@
-
-
+//Typically, an injected script is used for more direct interaction
+//with the web page's DOM. It's injected into the context of the web page
+//and can manipulate or read the web page's content. 
 const loadedResourceList = [];
 
 attachObserver();

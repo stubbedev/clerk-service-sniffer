@@ -2,7 +2,8 @@
 // Otherwise it does not, like on hubspot
 
 const competitorLogos = {
-    'Nosto': '/assets/icons/Competitor/Nosto48.png',  
+    'Nosto': "/assets/icons/Competitor/Nosto48.png",  
+    'Klevu': "/assets/icons/Competitor/Klevu48.png"
 };
 //Ensures DOMCL elements are accesible before executing script 
 document.addEventListener('DOMContentLoaded', function() {
@@ -31,8 +32,9 @@ function competitorListGenerator(requestData) {
 
     const competitorNames = Object.keys(requestData.message.competitor);
     const competitorDetails = {
-        'Nosto': "1. Nosto does not incorporate 'purchase data' into their AI model",
-        'Klevu': "1. Klevu typically have higher prices"
+        'Nosto': "NOSTO: 1.Does not incorporate 'purchase data' into their AI model. This means that product sliders often show duplicate product recommedendations which is a waisted spot where another product could be seen and purchased", 
+        'Klevu': "1. Klevu typically have higher prices",
+        'Doofinder': "123123123123"
     };
 
     competitorNames.forEach(comp => {
