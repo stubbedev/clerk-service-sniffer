@@ -25,7 +25,7 @@ function updateState( type, message, source ) {
 }
 
 function isClerk(resourceList){
-  const clerkDomains = ['api.clerk.io', 'cdn.clerk.io'];
+  const clerkDomains = ['api.clerk.io', 'cdn.clerk.io', 'custom.clerk.io'];
   for( const resource of resourceList ){
     for( const domain of clerkDomains ){
       if(resource?.name.includes(domain)){
