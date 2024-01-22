@@ -1,5 +1,9 @@
 document.addEventListener("DOMContentLoaded", async function() {
+  var opened = await refreshPopupDataOnOpen(); 
+  //it is not logging opens
+  console.log(opened); 
   const tab = await getCurrentTab();
+  console.log("DOMContentLoaded event triggered", tab);
   if(tab){
     const data = await handleStorage(null, tab.id, null);
     updateDOM(data)
@@ -21,6 +25,25 @@ async function handlePopup(request, sender) {
   return true;
 }
 
+//Cant get it to work or log any of the console.log's below 
+
+// // This event listener ensures the popup updates when the active tab changes
+// chrome.tabs.onUpdated.addListener(function(tabId, tab) {
+//   console.log("Tab Update Detected:", tabId);
+//   if (changeInfo.status === 'complete' && tab.active) {
+//     refreshPopupData(tabId);
+//   }
+// });
+
+// // This function fetches new data for the given tabId and updates the DOM
+// async function refreshPopupData(tabId) {
+//   console.log("Refreshing data for tab:", tabId);
+//   const newData = await handleStorage(null, tabId, null);
+//   console.log("New data fetched:", data);
+//   updateDOM(newData);
+// }
+
+
 function updateDOM(data) {
   const comps = data?.competitors;
   if(!comps){
@@ -40,6 +63,27 @@ function updateDOM(data) {
     headingEl.innerHTML = `<span>Service Used:</span>&nbsp;<b>${comps[0].name}</b>`;
   }
 }
+
+//Tried to get it to refresh automatically each time the extension is opened 
+// Function to refresh popup data on open of popup
+async function refreshPopupDataOnOpen() {
+  const tab = await getCurrentTab();
+  if (tab) {
+    const data = await handleStorage(null, tab.id, null);
+    console.log("Data Fetched for tab:", data)
+    updateDOM(data);
+  }
+}
+// doing an onMessage.addListener so we should be using 'request' as the variable in the console.log? 
+// Event listener for when the popup is opened
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  console.log("Popup opened*, recieving request:", request);
+  //unsure about 82-83
+  if (request.message.status === true) {
+    refreshPopupDataOnOpen();
+  }
+});
+
 
 function createListEntry(comp) {
   const el = document.createElement("div");
@@ -65,6 +109,7 @@ function createListEntry(comp) {
 }
 
 async function handleStorage(data, tabId, action) {
+  console.log("handleStorage called with:", data, tabId, action);
   const tabData = {};
   if (data) {
     tabData[tabId] = data;
@@ -75,6 +120,7 @@ async function handleStorage(data, tabId, action) {
     delete tmpData[tabId];
   }
   await chrome.storage.session.set({ data: tmpData });
+  console.log("handleStorage result:", data);
   return tmpData[tabId];
 }
 

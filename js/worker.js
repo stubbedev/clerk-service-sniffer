@@ -6,7 +6,7 @@ async function handleIcon(request, sender){
             32: "/assets/icons/color/32.png",
             48: "/assets/icons/color/48.png",
             128: "/assets/icons/color/128.png"
-        } : {
+        } : { 
             16: "/assets/icons/greyscale/16.png",
             32: "/assets/icons/greyscale/32.png",
             48: "/assets/icons/greyscale/48.png",
@@ -25,3 +25,11 @@ chrome.runtime.onMessage.addListener(
       }
     }
 );
+
+//trying to trigger refreshPopupDataOnOpen fun in popup.js 
+// it does not like this 
+//chrome.runtime.sendMessage({ message: { status: true } });
+
+
+
+
