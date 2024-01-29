@@ -1,12 +1,14 @@
 document.addEventListener("DOMContentLoaded", async function() {
-  var opened = await refreshPopupDataOnOpen(); 
-  //it is not logging opens
-  console.log(opened); 
+ 
   const tab = await getCurrentTab();
-  console.log("DOMContentLoaded event triggered", tab);
+
   if(tab){
     const data = await handleStorage(null, tab.id, null);
     updateDOM(data)
+    
+    updateLogos(data.competitors);  //Unsure what properties to put in here
+    console.log("Fetched Competitor Data *****:", data.competitors);
+
   }
 })
 
@@ -64,25 +66,25 @@ function updateDOM(data) {
   }
 }
 
-//Tried to get it to refresh automatically each time the extension is opened 
-// Function to refresh popup data on open of popup
-async function refreshPopupDataOnOpen() {
-  const tab = await getCurrentTab();
-  if (tab) {
-    const data = await handleStorage(null, tab.id, null);
-    console.log("Data Fetched for tab:", data)
-    updateDOM(data);
-  }
-}
-// doing an onMessage.addListener so we should be using 'request' as the variable in the console.log? 
-// Event listener for when the popup is opened
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log("Popup opened*, recieving request:", request);
-  //unsure about 82-83
-  if (request.message.status === true) {
-    refreshPopupDataOnOpen();
-  }
-});
+// //Tried to get it to refresh automatically each time the extension is opened 
+// // Function to refresh popup data on open of popup
+// async function refreshPopupDataOnOpen() {
+//   const tab = await getCurrentTab();
+//   if (tab) {
+//     const data = await handleStorage(null, tab.id, null);
+
+//     updateDOM(data);
+//   }
+// }
+// // doing an onMessage.addListener so we should be using 'request' as the variable in the console.log? 
+// // Event listener for when the popup is opened
+// chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+//   console.log("Popup opened*, recieving request:", request);
+//   //unsure about 82-83
+//   if (request.message.status === true) {
+//     refreshPopupDataOnOpen();
+//   }
+// });
 
 
 function createListEntry(comp) {
@@ -108,20 +110,101 @@ function createListEntry(comp) {
   return el;
 }
 
+function updateLogos(competitors){
+  console.log("Isarray?", Array.isArray(competitors));  //Doesnt work 
+  const logoContainer = document.getElementById('logo-container'); 
+  logoContainer.innerHTML = ''; 
+
+  //foreach competitor => do the below 
+  competitors.forEach(competitor => {
+    const img = document.createElement('img'); 
+    img.src = competitor.icons['32']; 
+    img.alt = competitor.name;
+    img.style.maxWidth = '50px'; 
+    img.style.maxHeight = '50px';
+    img.classList.add('competitor-logo');
+    logoContainer.appendChild(img); 
+
+  });
+
+}
+
+
+
+
+//Preserve if URL is the same but tab is different del
+
 async function handleStorage(data, tabId, action) {
-  console.log("handleStorage called with:", data, tabId, action);
+  console.log("Stored data before processing", data); //
+  console.log("New data for current tab:", tabId); //
+
+//We are creating tabData list and populating it with data from tabData[tabId] and then equal it / add to data with '=' 
   const tabData = {};
   if (data) {
     tabData[tabId] = data;
   }
+
   const storedData = await chrome.storage.session.get({ data: {} });
+  console.log("Stored data before processing", data); //
+
+  console.log("New data for new tab:", tabData); //
+
+  // if(storedData[tabId]['detected_on'] == data['detected_on']){
+
+  // We ='ed 'detected_on' to the local window.origin , where origin is current web pages original link
+
+    if (storedData[tabId] && storedData[tabId]['detected_on'] === data['detected_on']) {
+
+    // Add data as more than 1 competitor present 
+    console.log("Checking comp", comp);
+    //Accessing our storage of competitors based on tabID and data.competitors refers to the new array of competitors most recently fetched 
+    //Making them = , means we are aware of any updates in tabId and competitor data 
+    //Storing previous data and new data into one array 
+    storedData[tabId].competitors = [...storedData[tabId].competitors, ...data.competitors];
+
+    console.log("Current tab data:", storedData[tabId]); // 
+    console.log("New data:", data); // 
+
+    // none of the below logged 
+    // console.log("Competitors before merge:", storedData[tabId].competitors, data.competitors);
+    // storedData[tabId].competitors = [...storedData[tabId].competitors, ...data.competitors];
+    // console.log("Competitors after merge:", storedData[tabId].competitors);
+
+  } else {
+    // wipe data currently saved in sessionStorage for tabId and save new data under that tabId
+    // If the current TabID or URL is different, replace old data with new data
+    //So it is always relevant to the current tab and its content 
+
+    storedData[tabId] = data;
+
+    console.log("Replacing old data with new data for tab", tabId); //
+    console.log("Checking tabData", tabData); //
+    console.log("Checking data", data); //null 
+  }
+
+  //creating an object (tmpdata) by copying stored.Data & Tabdata into it 
   const tmpData = Object.assign({}, storedData.data, tabData);
+
+    
+    console.log("tmp Data Object **:", tmpData); //
+    console.log("Action received, CHECK:", action);  // NULL
+
+  
   if (action === "delete" && tmpData[tabId]) {
     delete tmpData[tabId];
+
   }
   await chrome.storage.session.set({ data: tmpData });
-  console.log("handleStorage result:", data);
+  
+
+  console.log("Does tmpData for tabId exist?", Boolean(tmpData[tabId])); //
+
+
+
   return tmpData[tabId];
+
+
+  
 }
 
 chrome.tabs.onRemoved.addListener(async function(tabid, removed) {

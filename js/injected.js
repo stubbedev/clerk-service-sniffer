@@ -95,6 +95,8 @@ function competitors(resourceList){
       desc: "",
     },
   }
+
+  // How are pushing comps found to 'found' array without them being connected in anyway or pushing it to found? 
   let found = [];
   for( const resource of resourceList ){
     for( const [comp, data] of Object.entries(competitors) ){
@@ -103,6 +105,8 @@ function competitors(resourceList){
           found.push(comp)
           competitors[comp]['detected_on'] = window.location.origin;
           compsFound.push(competitors[comp]);
+          
+
         }
       }
     }
