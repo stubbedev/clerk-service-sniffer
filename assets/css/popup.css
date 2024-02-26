@@ -97,7 +97,12 @@ body {
   min-height: 500px;
   align-items: center;
   justify-content: center;
-  border-radius: 0.25rem;
+  border-radius: 0.15rem;
+}
+
+img#logoImage{
+  width:60px;
+  padding: 0.2rem;
 }
 
 .popup .heading {
@@ -109,9 +114,9 @@ body {
   width: -moz-fill-available;
   width: -webkit-fill-available;
   width: fill-available;
-  padding: 1rem;
+  padding: 0.2rem;
   background-color: var(--ctp-mocha-surface0);
-  border-radius: 0.25rem;
+  border-radius: 0.2rem;
 }
 
 .heading h2 {
@@ -143,8 +148,13 @@ body {
   padding-bottom: 1rem;
 }
 
-.compEntry {
-  padding: 0 0.5rem;
+.compEntry .entryIcon {
+  height: 70px;
+  width: 70px;
+  padding: 0.30rem;
+  object-fit: contain;
+  border-radius: 100px;
+
 }
 
 .dropdown-container {
@@ -152,6 +162,7 @@ body {
   min-width: 1000px; 
   max-width: 1000px; 
   overflow-x: auto; 
+  overflow-y: scroll;
 }
 
 .dropdown-container {
