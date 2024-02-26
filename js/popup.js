@@ -55,7 +55,7 @@ function updateDOM(data) {
       // imgEl.src = `..${comps[0].icons["48"]}`;
       headingEl.innerHTML = `<span>Service Used:</span>&nbsp;<b>${comps[0].name}</b>`;
     } else {
-      console.error('The heading element was not found in the DOM');
+      console.error('The heading element was not fogit und in the DOM');
     }
   }
 }
