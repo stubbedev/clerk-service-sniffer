@@ -1,21 +1,5 @@
 document.addEventListener("DOMContentLoaded", async function() {
- 
   const tab = await getCurrentTab();
-
-  if(tab){
-    const data = await handleStorage(null, tab.id, null);
-    updateDOM(data)
-    
-  if (data && data.competitors) {
-    updateLogos(data.competitors);
-      } else {
-      console.error('Data is undefined or does not have a competitors property', error);
-    }
-    
-
-   // updateLogos(data.competitors);  //Unsure what properties to put in here
-
-  }
 })
 
 async function getCurrentTab() {
@@ -32,6 +16,18 @@ async function handlePopup(request, sender) {
   }
   return true;
 }
+
+// if(tab){
+//   const data = await handleStorage(null, tab.id, null);
+//   updateDOM(data)
+  
+// if (data && data.competitors) {
+//   updateLogos(data.competitors);
+//     } else {
+//       return;
+//   }
+
+// }
 
 
 function updateDOM(data) {
@@ -55,7 +51,7 @@ function updateDOM(data) {
       // imgEl.src = `..${comps[0].icons["48"]}`;
       headingEl.innerHTML = `<span>Service Used:</span>&nbsp;<b>${comps[0].name}</b>`;
     } else {
-      console.error('The heading element was not fogit und in the DOM');
+      return; 
     }
   }
 }
@@ -90,8 +86,8 @@ function createListEntry(comp) {
 }
 
 function updateLogos(competitors){
-  const logoContainer = document.getElementById('logo-container'); 
-  logoContainer.innerHTML = ''; 
+  const logoContainer = document.getElementById('logoImage'); 
+  logoContainer.innerHTML = '';
 
   //foreach competitor => do the below 
   competitors.forEach(competitor => {
@@ -108,6 +104,8 @@ function updateLogos(competitors){
 }
 
 
+
+
 async function handleStorage(data, tabId, action) {
 //We are creating tabData list and populating it with data from tabData[tabId] and then equal it / add to data with '=' 
   const tabData = {};
@@ -115,19 +113,16 @@ async function handleStorage(data, tabId, action) {
     tabData[tabId] = data;
   }
   const storedData = await chrome.storage.session.get({ data: {} });
-
+  console.log("Stored Data Results", storedData);
   // if(storedData[tabId]['detected_on'] == data['detected_on']){
   // We ='ed 'detected_on' to the local window.origin , where origin is current web pages original link
 
-    if (storedData[tabId] && storedData[tabId]['detected_on'] === data['detected_on']) {
-    console.log("Checking comp", comp);
+    if (storedData[tabId] && storedData[tabId]['detected_on'] === competitors[comp]['detected_on']) {
+    console.log("Checking comp****");
     //Accessing our storage of competitors based on tabID and data.competitors refers to the new array of competitors most recently fetched 
     //Making them = , means we are aware of any updates in tabId and competitor data 
     //Storing previous data and new data into one array 
     storedData[tabId].competitors = [...storedData[tabId].competitors, ...data.competitors];
-
-    console.log("Current tab data:", storedData[tabId]); // 
-    console.log("New data:", data); // 
 
 
   } else {
@@ -136,6 +131,7 @@ async function handleStorage(data, tabId, action) {
     //So it is always relevant to the current tab and its content 
 
     storedData[tabId] = data;
+    console.log("Checking stored data comp ");
 
   }
   //creating an object (tmpdata) by copying stored.Data & Tabdata into it 
@@ -143,15 +139,14 @@ async function handleStorage(data, tabId, action) {
   ///CHECK FOR tmpData before ATTEMPTING TO DELETE (DONE)
   const tmpData = Object.assign({}, storedData.data, tabData);
   if (action === "delete" && tmpData[tabId]) {
+    console.log("tmpData TabID");
     delete tmpData[tabId];
-
   }
+  
   await chrome.storage.session.set({ data: tmpData });
-  console.log("Does tmpData for tabId exist?", Boolean(tmpData[tabId])); //
+  console.log("Does tmpData for tabId exist?", Boolean(tmpData[tabId])); 
   return tmpData[tabId];
 
-
-  
 }
 
 chrome.tabs.onRemoved.addListener(async function(tabid, removed) {
@@ -165,3 +160,32 @@ chrome.runtime.onMessage.addListener(
     }
   },
 );
+
+// //Does not work
+// document.addEventListener( () => {
+//   // Assuming competitors is an  function that fetches data
+//   const data = competitors();
+//   console.log(data, comp); 
+// });
+
+//compsFound[] ? 
+
+//Add mutation observer? 
+// var observer = new MutationObserver(function(mutations) {
+//   mutations.forEach(function(mutation) {
+//       for (var i = 0; i < mutation.addedNodes.length; i++) {
+//           // Filter nodes based on some criteria, e.g., class name
+//           if (mutation.addedNodes[i].className === "competitor-info") {
+//               insertedNodes.push(mutation.addedNodes[i]);
+//               // Perform immediate action on this node, e.g., display your info
+//               displayCompetitorInfo(mutation.addedNodes[i]);
+//           }
+//       }
+//   });
+// });
+
+// observer.observe(document.body, { childList: true, subtree: true });
+
+// function displayCompetitorInfo(node) {
+//   // Logic to display information about the competitors
+// }

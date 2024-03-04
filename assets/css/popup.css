@@ -127,12 +127,13 @@ img#logoImage{
   padding-left: 1rem;
 }
 
-.heading img {
+/* removed as comp logos appeared at header */
+/* .heading img {
   height: 48px;
   width: 48px;
   object-fit: contain;
   border-radius: 999px;
-}
+} */
 
 .popup .content {
   width: 100%;
