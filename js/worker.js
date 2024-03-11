@@ -26,9 +26,6 @@ chrome.runtime.onMessage.addListener(
     }
 );
 
-//trying to trigger refreshPopupDataOnOpen fun in popup.js 
-// it does not like this 
-//chrome.runtime.sendMessage({ message: { status: true } });
 
 
 

@@ -1,7 +1,165 @@
-document.addEventListener("DOMContentLoaded", async function() {
-  const tab = await getCurrentTab();
-})
+//attempt #1
 
+// document.addEventListener("DOMContentLoaded", async function() {
+//   const loadingMessage = "Loading Competitor Information...";
+//   const noDataMessage = "No Competitors Found, Or Error Loading Competitor(s)";
+//   const tab = await getCurrentTab();
+//   const target = document.querySelector('[data-content="compList"]');
+//   let dataDisplayed = false;
+
+//   target.innerHTML = `<p>${loadingMessage}</p>`;
+
+//   if (tab) {
+//     const storedData = await handleStorage(null, tab.id, null);
+//     setTimeout(() => {
+//       if (!dataDisplayed) {
+//           target.innerHTML = `<p>${noDataMessage}</p>`;
+//       }
+//     }, 5000);
+
+
+//     if (storedData && storedData.competitors) {
+
+//       updateDOM(storedData);
+//       dataDisplayed = true;
+//     }
+//   }
+// });
+
+//attempt #2
+// document.addEventListener("DOMContentLoaded", async function() {
+//   const loadingMessage = "Loading Competitor Information...";
+//   const noDataMessage = "No Competitors Found, Or Error Loading Competitor(s)";
+//   const target = document.querySelector('[data-content="compList"]');
+
+//   target.innerHTML = `<p>${loadingMessage}</p>`;
+
+
+//   const tab = await getCurrentTab();
+//   if (!tab) {
+//       // Immediately handle case where no tab is focused.
+//       target.innerHTML = `<p>${noDataMessage}</p>`;
+//       return;
+//   }
+
+//   const storedData = await handleStorage(null, tab.id, null);
+//   if (storedData && storedData.competitors && storedData.competitors.length > 0) {
+//       updateDOM(storedData);
+//       dataSuccessfullyDisplayed = true; // Mark data as displayed
+//   }
+//   setTimeout(() => {
+//     if (!dataSuccessfullyDisplayed) {
+//         // Show noDataMessage only if data hasn't been successfully displayed
+//         target.innerHTML = `<p>${noDataMessage}</p>`;
+//     }
+//   }, 1000);
+// });
+
+
+//attempt #3 (WORKS just does not save comp data when reopening popup)
+// let dataDisplayed = false; 
+
+// document.addEventListener("DOMContentLoaded", async function() { 
+//   const loadingMessage = "Loading Competitor Information...";
+//   const noDataMessage = "No Competitors Found, Or Error Loading Competitor(s)";
+//   const target = document.querySelector('[data-content="compList"]');
+
+//   // Display the loading message initially.
+//   target.innerHTML = `<p>${loadingMessage}</p>`;
+
+//   const tab = await getCurrentTab();
+//   if (!tab) {
+//       target.innerHTML = `<p>${noDataMessage}</p>`;
+//       return;
+//   }
+
+//   // Use a timeout to wait for 3 seconds before deciding what to display.
+//   setTimeout(async () => {
+//       // Only fetch and check data after 3 seconds.
+//       const storedData = await handleStorage(null, tab.id, null);
+//       if (storedData && storedData.competitors && storedData.competitors.length > 0) {
+//           updateDOM(storedData);
+//           dataDisplayed = true;
+//       } else if (!dataDisplayed) {
+//           // If no data has been displayed, show the noDataMessage.
+//           target.innerHTML = `<p>${noDataMessage}</p>`;
+//       }
+//   }, 8000); // Wait for 3 seconds
+// });
+
+
+//attempt #4
+// let dataDisplayed = false; 
+
+// document.addEventListener("DOMContentLoaded", async function() {
+//     const loadingMessage = "Loading Competitor Information...";
+//     const noDataMessage = "No Competitors Found, Or Error Loading Competitor(s)";
+//     const target = document.querySelector('[data-content="compList"]');
+//     const tab = await getCurrentTab();
+    
+//     if (!tab) {
+//         target.innerHTML = `<p>${noDataMessage}</p>`;
+//         return;
+//     }
+
+//     target.innerHTML = `<p>${loadingMessage}</p>`;
+
+//     // Attempt to use cached data first
+//     chrome.storage.local.get(`competitorData_${tab.id}`, async (result) => {
+//         let storedData = result[`competitorData_${tab.id}`];
+//         if (storedData && storedData.competitors && storedData.competitors.length > 0) {
+//             updateDOM(storedData);
+//             dataDisplayed = true;
+//         } else {
+//             // Fetch and cache data if not already stored
+//             storedData = await handleStorage(null, tab.id, null);
+//             if (storedData && storedData.competitors && storedData.competitors.length > 0) {
+//                 chrome.storage.local.set({[`competitorData_${tab.id}`]: storedData});
+//                 updateDOM(storedData);
+//                 dataDisplayed = true;
+//             } else {
+//                 target.innerHTML = `<p>${noDataMessage}</p>`;
+//             }
+//         }
+//     });
+// });
+
+//Working attempt 
+let dataDisplayed = false;
+document.addEventListener("DOMContentLoaded", async function() {
+  const loadingMessage = "Loading Competitor Information...";
+  const noDataMessage = "No Competitors Found, Or Error Loading Competitor(s)";
+  const target = document.querySelector('[data-content="compList"]');
+  target.innerHTML = `<p>${loadingMessage}</p>`; // Display the loading message immediately
+
+  const tab = await getCurrentTab();
+  if (!tab) {
+      setTimeout(() => { target.innerHTML = `<p>${noDataMessage}</p>`; }, 3000); // Delay showing noDataMessage to ensure loadingMessage is seen
+      return;
+  }
+
+  chrome.storage.local.get(`competitorData_${tab.id}`, async (result) => {
+      let storedData = result[`competitorData_${tab.id}`];
+      if (storedData && storedData.competitors && storedData.competitors.length > 0) {
+          updateDOM(storedData);
+      } else {
+          setTimeout(() => {
+              // Perform a final check to avoid race conditions
+              if (!storedData || !storedData.competitors || storedData.competitors.length === 0) {
+                  target.innerHTML = `<p>${noDataMessage}</p>`;
+              }
+          }, 3000); 
+      }
+  });
+});
+
+
+
+
+
+
+//Retrieves the currently active tab in the last-focused window
+//Ensuring that the extension interacts with the user's current context.
 async function getCurrentTab() {
   const queryOptions = { active: true, lastFocusedWindow: true };
   const [tab] = await chrome.tabs.query(queryOptions);
@@ -9,28 +167,35 @@ async function getCurrentTab() {
 }
 
 async function handlePopup(request, sender) {
-  let data = request.message.data;
-  if (data) {
-    data = await handleStorage(data, sender.tab.id, null);
-    updateDOM(data);
+  // Check if the data has already been displayed to avoid redundant updates.
+  if (!dataDisplayed) {
+    // Assuming 'sender.tab.id' is valid and 'request.message' contains the relevant data.
+    // Try to retrieve any stored data first.
+    const storedData = await handleStorage(null, sender.tab.id, null);
+
+    // If stored data exists and contains competitors, use it to update the DOM immediately.
+    if (storedData && storedData.competitors) {
+      updateDOM(storedData);
+      dataDisplayed = true; // Mark the data as displayed to prevent further updates.
+    }
+    // If there's no stored data, and new data is available from the request, process this new data.
+    else if (request.message && request.message.data) {
+        let data = request.message.data;
+        // Save the new data.
+        data = await handleStorage(data, sender.tab.id, null);
+        if (data && data.competitors) {
+            updateDOM(data);
+            dataDisplayed = true; // Mark the data as displayed after updating the DOM with the new data.
+        }
+    }
   }
   return true;
 }
 
-// if(tab){
-//   const data = await handleStorage(null, tab.id, null);
-//   updateDOM(data)
-  
-// if (data && data.competitors) {
-//   updateLogos(data.competitors);
-//     } else {
-//       return;
-//   }
-
-// }
-
 
 function updateDOM(data) {
+  console.log("Updating DOM with data:#1", data); //seems console logging data & storedData give same array (comp data) * 
+
   const comps = data?.competitors;
   if(!comps){
     return;
@@ -42,13 +207,11 @@ function updateDOM(data) {
     target.append(createListEntry(comps[i]));
   }
 
-  // Change main logo to clerk logo 
+
   if (compFound) {
     const imgEl = document.querySelector('.heading img');
-    const headingEl = document.querySelector('.heading h2'); // Moved this line before its first use.
+    const headingEl = document.querySelector('.heading h2'); 
     if (headingEl){
-      // If imgEl is supposed to change, uncomment the next line
-      // imgEl.src = `..${comps[0].icons["48"]}`;
       headingEl.innerHTML = `<span>Service Used:</span>&nbsp;<b>${comps[0].name}</b>`;
     } else {
       return; 
@@ -86,10 +249,12 @@ function createListEntry(comp) {
 }
 
 function updateLogos(competitors){
+  console.log("Updating logos with competitors data:", competitors); //doesnt work 
+
   const logoContainer = document.getElementById('logoImage'); 
   logoContainer.innerHTML = '';
 
-  //foreach competitor => do the below 
+
   competitors.forEach(competitor => {
     const img = document.createElement('img'); 
     img.src = competitor.icons['32']; 
@@ -103,89 +268,46 @@ function updateLogos(competitors){
 
 }
 
-
-
+//Fetches and manipulates data stored in chrome.storage.session. 
+//This function serves multiple purposes based on the parameters passed: 
+//retrieving data for a specific tab, storing new data, or deleting data for a tab.
 
 async function handleStorage(data, tabId, action) {
-//We are creating tabData list and populating it with data from tabData[tabId] and then equal it / add to data with '=' 
-  const tabData = {};
-  if (data) {
-    tabData[tabId] = data;
+  // Fetch the entire storage object, not just { data: {} }
+  //Asynchronously retrieves the object stored under the key 'data' from the session storage.
+  //If there's no data yet, it initializes allData as an empty object.
+  const result = await chrome.storage.session.get('data');
+  let allData = result.data || {}; 
+
+  //Checks if the action specified is "delete". If so,
+  //it deletes the entry corresponding to tabId from allData, effectively removing all stored data for that tab.
+  if(action === "delete"){
+    delete allData[tabId];
+  } else if (data && data.competitors){
+    //if no alldata[tabId] initalizes allData[tabId] with empty object {}
+    allData[tabId] = allData[tabId] || {};
+
+    //if allData[TabId] already has comp otherwise uses empty array as fallback for next operation
+    //'...' spread operator used to expand existing comps and new comps inside a new array 
+    //Concatenating the two arrays, adding new comps into existing list 
+    //Result is assigned to allData[tabId].competitors, updating it with current tabId
+    //NEED MORE EXPLANATION HERE 
+    allData[tabId].competitors = [...(allData[tabId].competitors || []), ...data.competitors]; 
+
+  } 
+    await chrome.storage.session.set({ data: allData });
+    return allData[tabId];
   }
-  const storedData = await chrome.storage.session.get({ data: {} });
-  console.log("Stored Data Results", storedData);
-  // if(storedData[tabId]['detected_on'] == data['detected_on']){
-  // We ='ed 'detected_on' to the local window.origin , where origin is current web pages original link
 
-    if (storedData[tabId] && storedData[tabId]['detected_on'] === competitors[comp]['detected_on']) {
-    console.log("Checking comp****");
-    //Accessing our storage of competitors based on tabID and data.competitors refers to the new array of competitors most recently fetched 
-    //Making them = , means we are aware of any updates in tabId and competitor data 
-    //Storing previous data and new data into one array 
-    storedData[tabId].competitors = [...storedData[tabId].competitors, ...data.competitors];
-
-
-  } else {
-    // wipe data currently saved in sessionStorage for tabId and save new data under that tabId
-    // If the current TabID or URL is different, replace old data with new data
-    //So it is always relevant to the current tab and its content 
-
-    storedData[tabId] = data;
-    console.log("Checking stored data comp ");
-
-  }
-  //creating an object (tmpdata) by copying stored.Data & Tabdata into it 
-
-  ///CHECK FOR tmpData before ATTEMPTING TO DELETE (DONE)
-  const tmpData = Object.assign({}, storedData.data, tabData);
-  if (action === "delete" && tmpData[tabId]) {
-    console.log("tmpData TabID");
-    delete tmpData[tabId];
-  }
-  
-  await chrome.storage.session.set({ data: tmpData });
-  console.log("Does tmpData for tabId exist?", Boolean(tmpData[tabId])); 
-  return tmpData[tabId];
-
-}
 
 chrome.tabs.onRemoved.addListener(async function(tabid, removed) {
   await handleStorage({ data: null, tabId: tabid, action: "delete" });
 });
 
 chrome.runtime.onMessage.addListener(
-  async function(request, sender, sendRespons) {
+  async function(request, sender, sendResponse) {
     if (request.source == "CleSS" && request.type == "popup") {
       await handlePopup(request, sender);
     }
-  },
-);
+  } );
 
-// //Does not work
-// document.addEventListener( () => {
-//   // Assuming competitors is an  function that fetches data
-//   const data = competitors();
-//   console.log(data, comp); 
-// });
-
-//compsFound[] ? 
-
-//Add mutation observer? 
-// var observer = new MutationObserver(function(mutations) {
-//   mutations.forEach(function(mutation) {
-//       for (var i = 0; i < mutation.addedNodes.length; i++) {
-//           // Filter nodes based on some criteria, e.g., class name
-//           if (mutation.addedNodes[i].className === "competitor-info") {
-//               insertedNodes.push(mutation.addedNodes[i]);
-//               // Perform immediate action on this node, e.g., display your info
-//               displayCompetitorInfo(mutation.addedNodes[i]);
-//           }
-//       }
-//   });
-// });
-
-// observer.observe(document.body, { childList: true, subtree: true });
-
-// function displayCompetitorInfo(node) {
-//   // Logic to display information about the competitors
-// }

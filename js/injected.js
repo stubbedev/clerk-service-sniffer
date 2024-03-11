@@ -36,7 +36,7 @@ function isClerk(resourceList){
   return false;
 }
 
-let startTime = performance.now();
+
 
 function competitors(resourceList){
   let compsFound = [];
@@ -98,10 +98,6 @@ function competitors(resourceList){
     },
   }
 
-let endTime = performance.now();
-console.log(`Operation took ${endTime - startTime} milliseconds`);
-
-  // How are pushing comps found to 'found' array without them being connected in anyway or pushing it to found? 
   let found = [];
   for( const resource of resourceList ){
     for( const [comp, data] of Object.entries(competitors) ){
