@@ -102,6 +102,8 @@ function competitors(resourceList){
   for( const resource of resourceList ){
     for( const [comp, data] of Object.entries(competitors) ){
       for( const domain of data.sources ){
+        //if competitor (name is found in resource) is not already in the list
+        //!found, push that competitor 
         if(resource?.name.includes(domain) && !found.includes(comp)){
           found.push(comp)
           competitors[comp]['detected_on'] = window.location.origin;
